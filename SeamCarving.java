@@ -162,11 +162,50 @@ class Pixel {
         // back tracking
         Pixel curr = min;
         while(curr != null){
-            System.out.println("bt");
             curr.c = new Color(255, 0, 0);
             curr = curr.bt;
         }
     }
+    static public void rmColumn(Pixel root){
+        Pixel p = root;
+        // find the bottom left pixel
+        while(p.down != null){
+            p = p.down;
+        }
+
+        // find the minimum end
+        Pixel min = p;
+        int i = 0;
+        while(p != null){
+            if(p.dp < min.dp){
+                min = p;
+            }
+            p = p.right;
+        }
+
+        // back tracking
+        Pixel curr = min;
+        while(curr != null){
+            if(curr.left != null){
+                curr.left.right = curr.right;
+            }
+            if(curr.right != null){
+                curr.right.left = curr.left;
+            }
+            if(curr.bt != null){
+                if(curr.up.left == curr.bt){
+                    curr.up.down = curr.left;
+                    curr.left.up = curr.up;
+                }
+                else if(curr.up.right == curr.bt){
+                    curr.up.down = curr.right;
+                    curr.right.up = curr.up;
+                }
+            }
+            curr = curr.bt;
+        }
+    }
+
 }
 
 class SeamCarving extends JPanel{
@@ -184,7 +223,7 @@ class SeamCarving extends JPanel{
 
         Pixel root = Pixel.img2graph(img);
         Pixel.calEnergy(root);
-        Pixel.mkColumn(root);
+        Pixel.rmColumn(root);
         BufferedImage img2 = Pixel.graph2img(root);
         return img2;
     }
