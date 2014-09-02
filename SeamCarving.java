@@ -188,6 +188,7 @@ class Pixel {
                 }
                 tdp += pw.e;
                 if(tdp != pw.dp){
+                    pw.c = new Color(0,0,255);
                     error++;
                     System.out.println("Error: " + error);
                 }
@@ -283,11 +284,12 @@ class Pixel {
         Pixel cc;
         while(q.isEmpty() == false){
             cc = (Pixel)q.remove();
+            cc.mark = 0;
             if(cc.chg == 1){
                 cc.energy();
             }
             int tdp = 0;
-            Pixel tbt = cc.bt;
+            Pixel tbt = null;
             if(cc.up != null){
                 tdp = cc.up.dp;
                 tbt = cc.up;
@@ -303,13 +305,12 @@ class Pixel {
             tdp += cc.e;
             if(cc.chg == 1 || cc.dp != tdp || cc.bt != tbt){
                 //cc.c = new Color(0,255,0); --> this will affect the energy and dp update
+                cc.chg = 0;
                 cc.dp = tdp;
                 cc.bt = tbt;
                 if(cc.bt != null){
                     cc.bt.ft = cc;
                 }
-                cc.chg = 0;
-                cc.mark = 0;
                 if(cc.down != null){
                     if(cc.down.mark == 0){
                         cc.down.mark = 1;
@@ -327,7 +328,6 @@ class Pixel {
             }
         }
     }
-
 }
 
 class SeamCarving extends JPanel{
@@ -345,9 +345,14 @@ class SeamCarving extends JPanel{
 
         Pixel root = Pixel.img2graph(img);
         Pixel.calEnergy(root);
-        Pixel first = Pixel.rmColumn(root);
-        Pixel.updateEnergy(first);
-        Pixel.chkEnergy(root);
+        long time = System.nanoTime();
+        for(int i = 0; i < 100; i++){
+            Pixel first = Pixel.rmColumn(root);
+            Pixel.updateEnergy(first);
+            //Pixel.chkEnergy(root);
+        }
+        time = System.nanoTime() - time;
+        System.out.println("time: " + time/1000000);
         BufferedImage img2 = Pixel.graph2img(root);
         return img2;
     }
