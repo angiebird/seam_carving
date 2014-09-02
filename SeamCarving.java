@@ -265,6 +265,10 @@ class Pixel {
             first = curr;
             curr = curr.bt;
         }
+        if(first == root){
+            System.out.println("root changes");
+            root = root.right;
+        }
         return first;
     }
     static public void updateEnergy(Pixel first){
