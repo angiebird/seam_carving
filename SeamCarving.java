@@ -2,12 +2,16 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import javax.imageio.ImageIO;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import static java.lang.Math.*;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Iterator;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 
 class Pixel {
@@ -350,7 +354,7 @@ class SeamCarving extends JPanel{
         Pixel root = Pixel.img2graph(img);
         Pixel.calEnergy(root);
         long time = System.nanoTime();
-        for(int i = 0; i < 100; i++){
+        for(int i = 0; i < 1; i++){
             Pixel first = Pixel.rmColumn(root);
             Pixel.updateEnergy(first);
             //Pixel.chkEnergy(root);
@@ -362,9 +366,72 @@ class SeamCarving extends JPanel{
     }
     static public void main(String args[]){
         JFrame frame = new JFrame();
-        frame.getContentPane().add(new SeamCarving());
+        SeamCarving sc = new SeamCarving();
+        frame.getContentPane().add(sc);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 1000);
+        frame.setSize(1000, 750);
+        frame.setUndecorated(true);
+
+        MoveMouseListener mml = new MoveMouseListener(sc);
+        sc.addMouseListener(mml);
+        sc.addMouseMotionListener(mml);
+
         frame.setVisible(true);
+
+    }
+}
+
+class MoveMouseListener implements MouseListener, MouseMotionListener {
+    JComponent target;
+    Point start_drag;
+    Point start_loc;
+    Dimension size;
+
+    public MoveMouseListener(JComponent target) {
+        this.target = target;
+    }
+
+    public static JFrame getFrame(Container target) {
+        if (target instanceof JFrame) {
+            return (JFrame) target;
+        }
+        return getFrame(target.getParent());
+    }
+
+    Point getScreenLocation(MouseEvent e) {
+        Point cursor = e.getPoint();
+        Point target_location = this.target.getLocationOnScreen();
+        return new Point((int) (target_location.getX() + cursor.getX()),
+                (int) (target_location.getY() + cursor.getY()));
+    }
+
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent e) {
+        this.start_drag = this.getScreenLocation(e);
+        JFrame frame = this.getFrame(target);
+        this.start_loc = frame.getLocation();
+        this.size = frame.getSize();
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        Point current = this.getScreenLocation(e);
+        Point offset = new Point((int) current.getX() - (int) start_drag.getX(), (int) current.getY() - (int) start_drag.getY());
+        JFrame frame = this.getFrame(target);
+        Dimension windowSize = new Dimension((int)(size.getWidth()+offset.getX()), (int)(size.getHeight()));
+        frame.setSize(windowSize);
+    }
+
+    public void mouseMoved(MouseEvent e) {
     }
 }
