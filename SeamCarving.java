@@ -339,22 +339,29 @@ class Pixel {
 }
 
 class SeamCarving extends JPanel{
+    static JFrame frame = new JFrame();
+    static BufferedImage img = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
+    static int setImg = 0;
     public void paint(Graphics g) {
         BufferedImage img = createImage();
         g.drawImage(img, 0,0,this);
     }
     private BufferedImage createImage(){
-        BufferedImage img = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
-        try{
-            File input = new File("view.jpg");
-            img = ImageIO.read(input);
+        if(setImg == 0){
+            try{
+                File input = new File("view.jpg");
+                img = ImageIO.read(input);
+                setImg = 1;
+            }
+            catch (Exception e){}
         }
-        catch (Exception e){}
 
         Pixel root = Pixel.img2graph(img);
         Pixel.calEnergy(root);
         long time = System.nanoTime();
-        for(int i = 0; i < 1; i++){
+        Dimension size = frame.getSize();
+        int width = (int)size.getWidth();
+        for(int i = 0; i < img.getWidth() - width; i++){
             Pixel first = Pixel.rmColumn(root);
             Pixel.updateEnergy(first);
             //Pixel.chkEnergy(root);
@@ -365,7 +372,6 @@ class SeamCarving extends JPanel{
         return img2;
     }
     static public void main(String args[]){
-        JFrame frame = new JFrame();
         SeamCarving sc = new SeamCarving();
         frame.getContentPane().add(sc);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
