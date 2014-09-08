@@ -16,8 +16,8 @@ import java.awt.event.MouseMotionListener;
 
 class Pixel {
     static int up = 0;
-    static int down = 1;
-    static int left = 2;
+    static int left = 1;
+    static int down = 2;
     static int right = 3;
     Pixel[] dir = new Pixel[4]; //0:up 1:left 2:down 3:right
     Color c;
@@ -34,6 +34,12 @@ class Pixel {
     }
     public Pixel(int rgb){
         c = new Color(rgb);
+    }
+    static public void setDir(int rc){
+        up = 1-rc;
+        left = rc;
+        down = 2+1-rc;
+        right = 2+rc;
     }
     static public Pixel img2graph(BufferedImage img){
         int width = img.getWidth();
@@ -138,6 +144,8 @@ class Pixel {
         while(ph != null){
             pw = ph;
             while(pw != null){
+                pw.bt = null;
+                pw.ft = null;
                 pw.energy();
                 if(pw.dir[up] != null){
                     pw.dp = pw.dir[up].dp;
@@ -342,18 +350,28 @@ class SeamCarving extends JPanel{
             catch (Exception e){}
         }
 
+        Pixel.setDir(1);
         Pixel root = Pixel.img2graph(img);
-        Pixel.calEnergy(root);
-        long time = System.nanoTime();
         Dimension size = frame.getSize();
+        Pixel.calEnergy(root);
         int width = (int)size.getWidth();
         for(int i = 0; i < img.getWidth() - width; i++){
             Pixel first = Pixel.rmColumn(root);
             Pixel.updateEnergy(first);
             //Pixel.chkEnergy(root);
         }
-        time = System.nanoTime() - time;
-        System.out.println("time: " + time/1000000);
+
+        Pixel.setDir(0);
+        Pixel.calEnergy(root);
+        int height = (int)size.getHeight();
+        for(int i = 0; i < img.getHeight() - height; i++){
+            Pixel first = Pixel.rmColumn(root);
+            Pixel.updateEnergy(first);
+            //Pixel.chkEnergy(root);
+        }
+
+        Pixel.setDir(1);
+
         BufferedImage img2 = Pixel.graph2img(root);
         return img2;
     }
@@ -420,7 +438,7 @@ class MoveMouseListener implements MouseListener, MouseMotionListener {
         Point current = this.getScreenLocation(e);
         Point offset = new Point((int) current.getX() - (int) start_drag.getX(), (int) current.getY() - (int) start_drag.getY());
         JFrame frame = this.getFrame(target);
-        Dimension windowSize = new Dimension((int)(size.getWidth()+offset.getX()), (int)(size.getHeight()));
+        Dimension windowSize = new Dimension((int)(size.getWidth()+offset.getX()), (int)(size.getHeight()+offset.getY()));
         frame.setSize(windowSize);
     }
 
