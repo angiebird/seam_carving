@@ -15,10 +15,11 @@ import java.awt.event.MouseMotionListener;
 
 
 class Pixel {
-    Pixel up;
-    Pixel down;
-    Pixel left;
-    Pixel right;
+    static int up = 0;
+    static int down = 1;
+    static int left = 2;
+    static int right = 3;
+    Pixel[] dir = new Pixel[4]; //0:up 1:left 2:down 3:right
     Color c;
     int e;
     int dp;
@@ -43,36 +44,36 @@ class Pixel {
             if(h > 0){
                 // go down
                 if(h%2 == 0){
-                    p.down = new Pixel(img.getRGB(0, h));
+                    p.dir[down] = new Pixel(img.getRGB(0, h));
                 }
                 else{
-                    p.down = new Pixel(img.getRGB(width-1, h));
+                    p.dir[down] = new Pixel(img.getRGB(width-1, h));
                 }
-                p.down.up = p;
-                p = p.down;
+                p.dir[down].dir[up] = p;
+                p = p.dir[down];
             }
             if(h%2 == 0){
                 // go right
                 for(int w = 1; w < width; w++){
-                    p.right = new Pixel(img.getRGB(w, h));
-                    p.right.left = p;
+                    p.dir[right] = new Pixel(img.getRGB(w, h));
+                    p.dir[right].dir[left] = p;
                     if(h > 0){
-                        p.right.up = p.up.right;
-                        p.up.right.down = p.right;
+                        p.dir[right].dir[up] = p.dir[up].dir[right];
+                        p.dir[up].dir[right].dir[down] = p.dir[right];
                     }
-                    p = p.right;
+                    p = p.dir[right];
                 }
             }
             else{
                 // go left
                 for(int w = width-2; w >= 0; w--){
-                    p.left = new Pixel(img.getRGB(w, h));
-                    p.left.right = p;
+                    p.dir[left] = new Pixel(img.getRGB(w, h));
+                    p.dir[left].dir[right] = p;
                     if(h > 0){
-                        p.left.up = p.up.left;
-                        p.up.left.down = p.left;
+                        p.dir[left].dir[up] = p.dir[up].dir[left];
+                        p.dir[up].dir[left].dir[down] = p.dir[left];
                     }
-                    p = p.left;
+                    p = p.dir[left];
                 }
             }
         }
@@ -82,28 +83,28 @@ class Pixel {
         //get width
         Pixel p = root;
         int width = 1;
-        while(p.right != null){
+        while(p.dir[right] != null){
             width++;
-            p = p.right;
+            p = p.dir[right];
         }
         //get height
         p = root;
         int height = 1;
-        while(p.down != null){
+        while(p.dir[down] != null){
             height++;
-            p = p.down;
+            p = p.dir[down];
         }
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Pixel ph = root;
         Pixel pw = root;
         for(int h = 0; h < height; h++){
             if(h > 0){
-                ph = ph.down;
+                ph = ph.dir[down];
             }
             pw = ph;
             for(int w = 0; w < width; w++){
                 if(w > 0){
-                    pw = pw.right;
+                    pw = pw.dir[right];
                 }
                 img.setRGB(w, h, pw.c.getRGB());
             }
@@ -117,18 +118,18 @@ class Pixel {
     }
     public void energy(){
         this.e = 0;
-        if(this.left != null){
-            this.e += absGrad(this, this.left);
+        if(this.dir[left] != null){
+            this.e += absGrad(this, this.dir[left]);
         }
-        else if(this.right != null){
-            this.e += absGrad(this, this.right);
+        else if(this.dir[right] != null){
+            this.e += absGrad(this, this.dir[right]);
         }
 
-        if(this.up != null){
-            this.e += absGrad(this, this.up);
+        if(this.dir[up] != null){
+            this.e += absGrad(this, this.dir[up]);
         }
-        else if(this.down != null){
-            this.e += absGrad(this, this.down);
+        else if(this.dir[down] != null){
+            this.e += absGrad(this, this.dir[down]);
         }
     }
     static public void calEnergy(Pixel root){
@@ -138,23 +139,23 @@ class Pixel {
             pw = ph;
             while(pw != null){
                 pw.energy();
-                if(pw.up != null){
-                    pw.dp = pw.up.dp;
-                    pw.bt = pw.up;
-                    if(pw.up.left != null && pw.up.left.dp < pw.dp){
-                        pw.dp = pw.up.left.dp;
-                        pw.bt = pw.up.left;
+                if(pw.dir[up] != null){
+                    pw.dp = pw.dir[up].dp;
+                    pw.bt = pw.dir[up];
+                    if(pw.dir[up].dir[left] != null && pw.dir[up].dir[left].dp < pw.dp){
+                        pw.dp = pw.dir[up].dir[left].dp;
+                        pw.bt = pw.dir[up].dir[left];
                     }
-                    if(pw.up.right != null && pw.up.right.dp < pw.dp){
-                        pw.dp = pw.up.right.dp;
-                        pw.bt = pw.up.right;
+                    if(pw.dir[up].dir[right] != null && pw.dir[up].dir[right].dp < pw.dp){
+                        pw.dp = pw.dir[up].dir[right].dp;
+                        pw.bt = pw.dir[up].dir[right];
                     }
                     pw.bt.ft = pw;
                 }
                 pw.dp += pw.e;
-                pw = pw.right;
+                pw = pw.dir[right];
             }
-            ph = ph.down;
+            ph = ph.dir[down];
         }
     }
     static public void chkEnergy(Pixel root){
@@ -166,13 +167,13 @@ class Pixel {
             while(pw != null){
                 pw.energy();
                 int tdp = 0;
-                if(pw.up != null){
-                    tdp = pw.up.dp;
-                    if(pw.up.left != null && pw.up.left.dp < tdp){
-                        tdp = pw.up.left.dp;
+                if(pw.dir[up] != null){
+                    tdp = pw.dir[up].dp;
+                    if(pw.dir[up].dir[left] != null && pw.dir[up].dir[left].dp < tdp){
+                        tdp = pw.dir[up].dir[left].dp;
                     }
-                    if(pw.up.right != null && pw.up.right.dp < tdp){
-                        tdp = pw.up.right.dp;
+                    if(pw.dir[up].dir[right] != null && pw.dir[up].dir[right].dp < tdp){
+                        tdp = pw.dir[up].dir[right].dp;
                     }
                 }
                 tdp += pw.e;
@@ -181,16 +182,16 @@ class Pixel {
                     error++;
                     System.out.println("Error: " + error);
                 }
-                pw = pw.right;
+                pw = pw.dir[right];
             }
-            ph = ph.down;
+            ph = ph.dir[down];
         }
     }
     static public void mkColumn(Pixel root){
         Pixel p = root;
         // find the bottom left pixel
-        while(p.down != null){
-            p = p.down;
+        while(p.dir[down] != null){
+            p = p.dir[down];
         }
 
         // find the minimum end
@@ -200,7 +201,7 @@ class Pixel {
             if(p.dp < min.dp){
                 min = p;
             }
-            p = p.right;
+            p = p.dir[right];
         }
 
         // back tracking
@@ -213,8 +214,8 @@ class Pixel {
     static public Pixel rmColumn(Pixel root){
         Pixel p = root;
         // find the bottom left pixel
-        while(p.down != null){
-            p = p.down;
+        while(p.dir[down] != null){
+            p = p.dir[down];
         }
 
         // find the minimum end
@@ -224,7 +225,7 @@ class Pixel {
             if(p.dp < min.dp){
                 min = p;
             }
-            p = p.right;
+            p = p.dir[right];
         }
 
         // back tracking
@@ -232,31 +233,31 @@ class Pixel {
         Pixel first = min;
         while(curr != null){
             if(curr.bt != null){
-                if(curr.up.left == curr.bt){
-                    curr.up.down = curr.left;
-                    curr.left.up = curr.up;
+                if(curr.dir[up].dir[left] == curr.bt){
+                    curr.dir[up].dir[down] = curr.dir[left];
+                    curr.dir[left].dir[up] = curr.dir[up];
                 }
-                else if(curr.up.right == curr.bt){
-                    curr.up.down = curr.right;
-                    curr.right.up = curr.up;
+                else if(curr.dir[up].dir[right] == curr.bt){
+                    curr.dir[up].dir[down] = curr.dir[right];
+                    curr.dir[right].dir[up] = curr.dir[up];
                 }
             }
-            if(curr.left != null){
-                curr.left.right = curr.right;
-                curr.left.chg = 1;
-                //curr.left.energy(); // update energy --> do this in updateEnergy()
+            if(curr.dir[left] != null){
+                curr.dir[left].dir[right] = curr.dir[right];
+                curr.dir[left].chg = 1;
+                //curr.dir[left].energy(); // update energy --> do this in updateEnergy()
             }
-            if(curr.right != null){
-                curr.right.left = curr.left;
-                curr.right.chg = 1;
-                //curr.right.energy(); // update energy --> do this in updateEnergy()
+            if(curr.dir[right] != null){
+                curr.dir[right].dir[left] = curr.dir[left];
+                curr.dir[right].chg = 1;
+                //curr.dir[right].energy(); // update energy --> do this in updateEnergy()
             }
             first = curr;
             curr = curr.bt;
         }
         if(first == root){
             System.out.println("root changes");
-            root = root.right;
+            root = root.dir[right];
         }
         return first;
     }
@@ -265,13 +266,13 @@ class Pixel {
         // update dp
         Queue q = new LinkedList();
         Iterator iterator = q.iterator();
-        if(first.left != null){
-            first.left.mark = 1;
-            q.add(first.left);
+        if(first.dir[left] != null){
+            first.dir[left].mark = 1;
+            q.add(first.dir[left]);
         }
-        if(first.right != null){
-            first.right.mark = 1;
-            q.add(first.right);
+        if(first.dir[right] != null){
+            first.dir[right].mark = 1;
+            q.add(first.dir[right]);
         }
 
         Pixel cc;
@@ -283,16 +284,16 @@ class Pixel {
             }
             int tdp = 0;
             Pixel tbt = null;
-            if(cc.up != null){
-                tdp = cc.up.dp;
-                tbt = cc.up;
-                if(cc.up.left != null && cc.up.left.dp < tdp){
-                    tdp = cc.up.left.dp;
-                    tbt = cc.up.left;
+            if(cc.dir[up] != null){
+                tdp = cc.dir[up].dp;
+                tbt = cc.dir[up];
+                if(cc.dir[up].dir[left] != null && cc.dir[up].dir[left].dp < tdp){
+                    tdp = cc.dir[up].dir[left].dp;
+                    tbt = cc.dir[up].dir[left];
                 }
-                if(cc.up.right != null && cc.up.right.dp < tdp){
-                    tdp = cc.up.right.dp;
-                    tbt = cc.up.right;
+                if(cc.dir[up].dir[right] != null && cc.dir[up].dir[right].dp < tdp){
+                    tdp = cc.dir[up].dir[right].dp;
+                    tbt = cc.dir[up].dir[right];
                 }
             }
             tdp += cc.e;
@@ -304,18 +305,18 @@ class Pixel {
                 if(cc.bt != null){
                     cc.bt.ft = cc;
                 }
-                if(cc.down != null){
-                    if(cc.down.mark == 0){
-                        cc.down.mark = 1;
-                        q.add(cc.down);
+                if(cc.dir[down] != null){
+                    if(cc.dir[down].mark == 0){
+                        cc.dir[down].mark = 1;
+                        q.add(cc.dir[down]);
                     }
-                    if(cc.down.left != null && cc.down.left.mark == 0){
-                        cc.down.left.mark = 1;
-                        q.add(cc.down.left);
+                    if(cc.dir[down].dir[left] != null && cc.dir[down].dir[left].mark == 0){
+                        cc.dir[down].dir[left].mark = 1;
+                        q.add(cc.dir[down].dir[left]);
                     }
-                    if(cc.down.right != null && cc.down.right.mark == 0){
-                        cc.down.right.mark = 1;
-                        q.add(cc.down.right);
+                    if(cc.dir[down].dir[right] != null && cc.dir[down].dir[right].mark == 0){
+                        cc.dir[down].dir[right].mark = 1;
+                        q.add(cc.dir[down].dir[right]);
                     }
                 }
             }
@@ -334,7 +335,7 @@ class SeamCarving extends JPanel{
     private BufferedImage createImage(){
         if(setImg == 0){
             try{
-                File input = new File("view.jpg");
+                File input = new File("pic.png");
                 img = ImageIO.read(input);
                 setImg = 1;
             }
