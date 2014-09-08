@@ -138,21 +138,6 @@ class Pixel {
             pw = ph;
             while(pw != null){
                 pw.energy();
-                //pw.e = 0;
-                //if(pw.left != null){
-                //    pw.e += absGrad(pw, pw.left);
-                //}
-                //else if(pw.right != null){
-                //    pw.e += absGrad(pw, pw.right);
-                //}
-
-                //if(pw.up != null){
-                //    pw.e += absGrad(pw, pw.up);
-                //}
-                //else if(pw.down != null){
-                //    pw.e += absGrad(pw, pw.down);
-                //}
-
                 if(pw.up != null){
                     pw.dp = pw.up.dp;
                     pw.bt = pw.up;
@@ -375,7 +360,7 @@ class SeamCarving extends JPanel{
         SeamCarving sc = new SeamCarving();
         frame.getContentPane().add(sc);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 750);
+        frame.setSize(1000, 1000);
         frame.setUndecorated(true);
 
         MoveMouseListener mml = new MoveMouseListener(sc);
