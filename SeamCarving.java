@@ -195,7 +195,7 @@ class Pixel {
             ph = ph.dir[down];
         }
     }
-    static public void mkColumn(Pixel root){
+    static public void mkRowColumn(Pixel root){
         Pixel p = root;
         // find the bottom left pixel
         while(p.dir[down] != null){
@@ -219,7 +219,7 @@ class Pixel {
             curr = curr.bt;
         }
     }
-    static public Pixel rmColumn(Pixel root){
+    static public Pixel rmRowColumn(Pixel root){
         Pixel p = root;
         // find the bottom left pixel
         while(p.dir[down] != null){
@@ -356,7 +356,7 @@ class SeamCarving extends JPanel{
         Pixel.calEnergy(root);
         int width = (int)size.getWidth();
         for(int i = 0; i < img.getWidth() - width; i++){
-            Pixel first = Pixel.rmColumn(root);
+            Pixel first = Pixel.rmRowColumn(root);
             Pixel.updateEnergy(first);
             //Pixel.chkEnergy(root);
         }
@@ -365,7 +365,7 @@ class SeamCarving extends JPanel{
         Pixel.calEnergy(root);
         int height = (int)size.getHeight();
         for(int i = 0; i < img.getHeight() - height; i++){
-            Pixel first = Pixel.rmColumn(root);
+            Pixel first = Pixel.rmRowColumn(root);
             Pixel.updateEnergy(first);
             //Pixel.chkEnergy(root);
         }
