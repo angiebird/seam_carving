@@ -336,20 +336,19 @@ class SeamCarving extends JPanel{
     static JFrame frame = new JFrame();
     static BufferedImage img = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
     static int setImg = 0;
+    public SeamCarving(){
+        super();
+        try{
+            File input = new File("pic.png");
+            img = ImageIO.read(input);
+        }
+        catch (Exception e){}
+    }
     public void paint(Graphics g) {
         BufferedImage img = createImage();
         g.drawImage(img, 0,0,this);
     }
     private BufferedImage createImage(){
-        if(setImg == 0){
-            try{
-                File input = new File("pic.png");
-                img = ImageIO.read(input);
-                setImg = 1;
-            }
-            catch (Exception e){}
-        }
-
         Pixel.setDir(1);
         Pixel root = Pixel.img2graph(img);
         Dimension size = frame.getSize();
@@ -379,7 +378,7 @@ class SeamCarving extends JPanel{
         SeamCarving sc = new SeamCarving();
         frame.getContentPane().add(sc);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 1000);
+        frame.setSize(sc.img.getWidth(), sc.img.getHeight());
         frame.setUndecorated(true);
 
         MoveMouseListener mml = new MoveMouseListener(sc);
