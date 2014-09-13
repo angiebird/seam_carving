@@ -35,6 +35,18 @@ class Pixel {
     public Pixel(int rgb){
         c = new Color(rgb);
     }
+    public void copy(Pixel b){
+        for(int i = 0; i < 4; i++){
+            dir[i] = b.dir[i];
+        }
+        c = b.c;
+        e = b.e;
+        dp = b.dp;
+        chg = b.chg;
+        mark =  b.mark;
+        bt = b.bt;
+        ft = b.ft;
+    }
     static public void setDir(int rc){
         up = 1-rc;
         left = rc;
@@ -265,7 +277,6 @@ class Pixel {
         }
         if(first == root){
             System.out.println("root changes");
-            root = root.dir[right];
         }
         return first;
     }
@@ -356,6 +367,9 @@ class SeamCarving extends JPanel{
         int width = (int)size.getWidth();
         for(int i = 0; i < img.getWidth() - width; i++){
             Pixel first = Pixel.rmRowColumn(root);
+            if(root == first){
+                root = root.dir[root.right];
+            }
             Pixel.updateEnergy(first);
             //Pixel.chkEnergy(root);
         }
